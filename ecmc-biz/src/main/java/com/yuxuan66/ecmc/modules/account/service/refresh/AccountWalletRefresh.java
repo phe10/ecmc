@@ -36,7 +36,8 @@ public class AccountWalletRefresh {
         userAccount.esiClient();
         WalletApi walletApi = new WalletApi();
         try {
-            List<CharacterWalletJournalResponse> walletJournal = walletApi.getCharactersCharacterIdWalletJournal(userAccount.getCharacterId(), "", "", 1,null);
+            List<CharacterWalletJournalResponse> walletJournal =
+                    walletApi.getCharactersCharacterIdWalletJournal(userAccount.getCharacterId(), "", "", 1, userAccount.getAccessToken());
             List<AccountWallet> accountWalletList = new ArrayList<>();
             AccountWallet lastId = accountWalletMapper.getLastId(userAccount.getId());
             List<CharacterWalletJournalResponse> saveList = walletJournal.stream().filter(item -> item.getId() > (lastId == null ? 0 : lastId.getJournalId())).toList();
