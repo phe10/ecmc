@@ -126,6 +126,7 @@ public class UserAccount extends BaseEntity<UserAccount> implements Serializable
     @TableField(exist = false)
     private User user;
 
+    private BigDecimal pap;
 
 
     /**

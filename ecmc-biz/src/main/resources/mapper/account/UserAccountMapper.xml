@@ -20,7 +20,7 @@
         <result column="join_time" property="joinTime"/>
         <result column="create_time" property="createTime"/>
         <result column="create_by" property="createBy"/>
-
+        <result column="pap" property="pap"/>
 
         <association property="user" javaType="com.yuxuan66.ecmc.modules.system.entity.User">
             <id column="user_id" property="id"/>

@@ -8,7 +8,7 @@
     <artifactId>eve-corp-manager-cacx</artifactId>
     <packaging>pom</packaging>
     <version>0.0.1</version>
-    <description>混沌军团管理系统</description>
+    <description>LSP军团管理系统</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>

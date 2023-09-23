@@ -1,1 +1,1 @@
-## 基于vbean admin开发的混沌军团管理系统
+## 基于vbean admin开发的LSP军团管理系统
