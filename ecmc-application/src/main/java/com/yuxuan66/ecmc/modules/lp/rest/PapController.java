@@ -2,6 +2,7 @@ package com.yuxuan66.ecmc.modules.lp.rest;
 
 import com.yuxuan66.ecmc.modules.lp.entity.dto.SendLpDto;
 import com.yuxuan66.ecmc.modules.lp.entity.dto.SendPAPDto;
+import com.yuxuan66.ecmc.modules.lp.entity.query.FleetMemebersQuery;
 import com.yuxuan66.ecmc.modules.lp.entity.query.LpLogQuery;
 import com.yuxuan66.ecmc.modules.lp.service.LpService;
 import com.yuxuan66.ecmc.modules.lp.service.PapService;
@@ -27,5 +28,10 @@ public class PapController extends BaseController<PapService> {
     public Rs sendPap(@RequestBody SendPAPDto sendPAPDto) {
         baseService.sendPAP(sendPAPDto);
         return Rs.ok();
+    }
+
+    @GetMapping(path = "/searchFleetMemebers")
+    public Rs searchFleetMemebers(FleetMemebersQuery fleetMemebersQuery){
+        return Rs.ok(baseService.fleetMemebers(fleetMemebersQuery));
     }
 }

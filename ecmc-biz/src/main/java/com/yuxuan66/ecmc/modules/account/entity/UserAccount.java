@@ -128,7 +128,6 @@ public class UserAccount extends BaseEntity<UserAccount> implements Serializable
 
     private BigDecimal pap;
 
-
     /**
      * 获取一个esi操作对象
      *

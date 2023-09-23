@@ -14,4 +14,5 @@ public class PapLogQuery extends BaseQuery<PAPLog> {
 
     private Long accountId;
     private Long userId;
+    private Long fleetId;
 }

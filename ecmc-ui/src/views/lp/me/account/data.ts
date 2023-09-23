@@ -35,6 +35,12 @@ export const columns: BasicColumn[] = [
     dataIndex: 'lpNow',
     width: 80
   },
+  {
+    sorter: true,
+    title: 'PAP',
+    dataIndex: 'pap',
+    width: 80
+  },
 ]
 
 export const searchFormSchema: FormSchema[] = [

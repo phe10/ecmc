@@ -40,6 +40,9 @@
         <template v-if="column.key === 'qq'">
           {{ record.user.qq }}
         </template>
+        <template v-if="column.key === 'pap'">
+          {{ record.pap }}
+        </template>
         <template v-if="column.key === 'status'">
           <Tag :color="record.status === 0 ? 'processing' : 'error'">
             {{ record.status === 0 ? '正常' : (record.status === 1 ? '冻结' : '锁定') }}

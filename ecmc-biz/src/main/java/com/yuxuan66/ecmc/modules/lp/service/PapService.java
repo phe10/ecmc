@@ -2,19 +2,25 @@ package com.yuxuan66.ecmc.modules.lp.service;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuxuan66.ecmc.cache.ConfigKit;
+import com.yuxuan66.ecmc.cache.EveCache;
 import com.yuxuan66.ecmc.cache.key.CacheKey;
 import com.yuxuan66.ecmc.common.consts.Const;
+import com.yuxuan66.ecmc.common.utils.Lang;
 import com.yuxuan66.ecmc.common.utils.StpUtil;
 import com.yuxuan66.ecmc.modules.account.entity.UserAccount;
 import com.yuxuan66.ecmc.modules.account.mapper.UserAccountMapper;
+import com.yuxuan66.ecmc.modules.account.service.UserAccountService;
+import com.yuxuan66.ecmc.modules.lp.entity.FleetMemebers;
 import com.yuxuan66.ecmc.modules.lp.entity.LpLog;
 import com.yuxuan66.ecmc.modules.lp.entity.PAPLog;
 import com.yuxuan66.ecmc.modules.lp.entity.consts.LpSource;
 import com.yuxuan66.ecmc.modules.lp.entity.consts.LpType;
 import com.yuxuan66.ecmc.modules.lp.entity.dto.SendLpDto;
 import com.yuxuan66.ecmc.modules.lp.entity.dto.SendPAPDto;
+import com.yuxuan66.ecmc.modules.lp.entity.query.FleetMemebersQuery;
 import com.yuxuan66.ecmc.modules.lp.entity.query.LpLogQuery;
 import com.yuxuan66.ecmc.modules.lp.entity.query.PapLogQuery;
 import com.yuxuan66.ecmc.modules.lp.mapper.LpLogMapper;
@@ -27,14 +33,18 @@ import lombok.RequiredArgsConstructor;
 import net.troja.eve.esi.ApiException;
 import net.troja.eve.esi.api.CorporationApi;
 import net.troja.eve.esi.api.FleetsApi;
-import net.troja.eve.esi.model.CharacterFleetResponse;
-import net.troja.eve.esi.model.CorporationRolesResponse;
+import net.troja.eve.esi.model.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Sir丶雨轩
@@ -52,51 +62,138 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
     @Resource
     private PapLogMapper papLogMapper;
 
-    public Page<PAPLog> listPapLogByAccountId(PapLogQuery papLogQuery) {
-        return query()
-                .eq(papLogQuery.getAccountId() != null, "account_id", papLogQuery.getAccountId())
-                .eq(papLogQuery.getAccountId() == null, "user_id", StpUtil.getLoginId()).page(papLogQuery.getPageOrder());
-    }
+    @Resource
+    private EveCache eveCache;
 
-    public Page<PAPLog> listPapLog(PapLogQuery papLogQuery) {
-        if (!userService.getPermCode(StpUtil.getLoginId()).contains(Const.LP_SEND)) {
-            papLogQuery.setUserId(StpUtil.getLoginId());
+    @Resource
+    private UserAccountService userAccountService;
+
+//    public Page<PAPLog> listPapLogByAccountId(PapLogQuery papLogQuery) {
+//        return query()
+//                .eq(papLogQuery.getAccountId() != null, "account_id", papLogQuery.getAccountId())
+//                .eq(papLogQuery.getAccountId() == null, "user_id", StpUtil.getLoginId()).page(papLogQuery.getPageOrder());
+//    }
+
+//    public Page<PAPLog> listPapLog(PapLogQuery papLogQuery) {
+//        if (!userService.getPermCode(StpUtil.getLoginId()).contains(Const.LP_SEND)) {
+//            papLogQuery.setUserId(StpUtil.getLoginId());
+//        }
+//        return baseMapper.selectPapLog(papLogQuery.getPage(), papLogQuery);
+//    }
+
+    public List<FleetMemebers> fleetMemebers(FleetMemebersQuery fleetMemebersQuery) {
+        if (StringUtils.isBlank(fleetMemebersQuery.getCommander())) {
+            List<UserAccount> userAccountList = userAccountService.query().eq("user_id", StpUtil.getLoginId()).list();
+            UserAccount userAccount = userAccountList.get(0);
+            fleetMemebersQuery.setCommander(userAccount.getCharacterName());
         }
-        return baseMapper.selectPapLog(papLogQuery.getPage(), papLogQuery);
-    }
-
-
-    public void sendPAP(SendPAPDto sendPAPDto) {
-
-        QueryWrapper<UserAccount> wrapper = new QueryWrapper<UserAccount>().in("character_name", sendPAPDto.getCreatedBy());
+        QueryWrapper<UserAccount> wrapper = new QueryWrapper<UserAccount>().in("character_name",
+                fleetMemebersQuery.getCommander());
         wrapper.eq(true, "corp_id", ConfigKit.get(CacheKey.EVE_MAIN_CORP));
         List<UserAccount> creatorUserAccountList = userAccountMapper.selectList(wrapper);
         //非注册用户，非本军团成员不能PAP
         if (creatorUserAccountList.isEmpty()) {
-            return;
+            return new ArrayList<FleetMemebers>();
         }
         UserAccount papCreator = creatorUserAccountList.get(0);
+        List<FleetMemebers> memebers = new ArrayList<>();
+        FleetsApi fleetsApi = new FleetsApi();
+        try {
+            papCreator.esiClient();
+            CharacterFleetResponse characterFleetResponse =
+                    fleetsApi.getCharactersCharacterIdFleet(papCreator.getCharacterId(), null, null,
+                            papCreator.getAccessToken());
+            Long fleetId = characterFleetResponse.getFleetId();
+            if (fleetId == null || fleetId == 0L) {
+                throw new BizException("Cant find a fleet of this commander.");
+            }
+            List<FleetMembersResponse> fleetMembersResponseList = fleetsApi.getFleetsFleetIdMembers(fleetId, "zh",
+                    null, null,
+                    "zh",
+                    papCreator.getAccessToken());
+            Map<Integer, FleetMembersResponse> fleetMembersResponseMap =
+                    fleetMembersResponseList.stream().collect(Collectors.toMap(FleetMembersResponse::getCharacterId,
+                            Function.identity(), (key1, key2) -> key1));
+            List<Integer> cIds = new ArrayList<>();
+            boolean areUComd = false;
+            for (FleetMembersResponse fleetMembersResponse : fleetMembersResponseList) {
+                FleetMembersResponse.RoleEnum role = fleetMembersResponse.getRole();
+                if (FleetMembersResponse.RoleEnum.FLEET_COMMANDER == role
+                        && fleetMembersResponse.getCharacterId().equals(papCreator.getCharacterId())) {
+                    areUComd = true;
+                }
+                cIds.add(fleetMembersResponse.getCharacterId());
+            }
+            if (!areUComd) {
+                throw new BizException("Are u Commander?");
+            }
+            QueryWrapper<UserAccount> cWapper = new QueryWrapper<UserAccount>().in("character_id", cIds);
+            wrapper.eq(true, "corp_id", ConfigKit.get(CacheKey.EVE_MAIN_CORP));
+            List<UserAccount> userAccountList = userAccountMapper.selectList(cWapper);
+            if (userAccountList.isEmpty()) {
+                throw new BizException("No user register system?");
+            }
+
+            for (UserAccount userAccount : userAccountList) {
+                FleetMemebers fleetMemebers = new FleetMemebers();
+                Integer shipId = fleetMembersResponseMap.get(userAccount.getCharacterId()).getShipTypeId();
+                TypeResponse typeResponse = eveCache.typeName(shipId);
+                if (typeResponse == null) {
+                    fleetMemebers.setShip("No Ship Found.");
+                } else {
+                    fleetMemebers.setShip(eveCache.typeName(shipId).getName());
+                }
+                fleetMemebers.setCharacterName(userAccount.getCharacterName());
+                fleetMemebers.setAllianceName(userAccount.getAllianceName());
+                fleetMemebers.setCorpName(userAccount.getCorpName());
+                fleetMemebers.setCreateTime(Lang.getNowTimestamp());
+                fleetMemebers.setCommander(papCreator.getCharacterName());
+                fleetMemebers.setCommanderId(papCreator.getCharacterId());
+                memebers.add(fleetMemebers);
+            }
+        } catch (ApiException e) {
+            throw new BizException(StrUtil.format("has something wrong with esi api：{}", e.getMessage()));
+        }
+        return memebers;
+    }
+
+    public void sendPAP(SendPAPDto sendPAPDto) {
+        UserAccount papCreator =
+                userAccountService.query().eq("user_id", StpUtil.getLoginId()).eq("is_main", 1).one();
         if (papCreator == null) {
             return;
         }
-        try {
-            CorporationApi corporationApi = new CorporationApi();
-            List<CorporationRolesResponse> corporationIdRoles =
-                    corporationApi.getCorporationsCorporationIdRoles(papCreator.getCorpId(), "", "", papCreator.getAccessToken());
-            // 角色ID=>是否是总监
-            List<Integer> directorList = new ArrayList<>();
-            for (CorporationRolesResponse role : corporationIdRoles) {
-                if (role.getRoles() != null && role.getRoles().stream().anyMatch(item -> item == CorporationRolesResponse.RolesEnum.DIRECTOR)) {
-                    directorList.add(role.getCharacterId());
-                }
-            }
-            boolean isDirector = creatorUserAccountList.stream().anyMatch(item -> directorList.contains(item.getCharacterId()));
-            if (!isDirector) {
-                return;
-            }
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        }
+//        QueryWrapper<UserAccount> wrapper = new QueryWrapper<UserAccount>().in("character_name", sendPAPDto.getCreatedBy());
+//        wrapper.eq(true, "corp_id", ConfigKit.get(CacheKey.EVE_MAIN_CORP));
+//        List<UserAccount> creatorUserAccountList = userAccountMapper.selectList(wrapper);
+//        //非注册用户，非本军团成员不能PAP
+//        if (creatorUserAccountList.isEmpty()) {
+//            return;
+//        }
+//        UserAccount papCreator = creatorUserAccountList.get(0);
+//        if (papCreator == null) {
+//            return;
+//        }
+        papCreator.esiClient();
+//        try {
+//
+//            CorporationApi corporationApi = new CorporationApi();
+//            List<CorporationRolesResponse> corporationIdRoles =
+//                    corporationApi.getCorporationsCorporationIdRoles(papCreator.getCorpId(), "", "", papCreator.getAccessToken());
+//            // 角色ID=>是否是总监
+//            List<Integer> directorList = new ArrayList<>();
+//            for (CorporationRolesResponse role : corporationIdRoles) {
+//                if (role.getRoles() != null && role.getRoles().stream().anyMatch(item -> item == CorporationRolesResponse.RolesEnum.DIRECTOR)) {
+//                    directorList.add(role.getCharacterId());
+//                }
+//            }
+//            boolean isDirector = creatorUserAccountList.stream().anyMatch(item -> directorList.contains(item.getCharacterId()));
+//            if (!isDirector) {
+//                return;
+//            }
+//        } catch (ApiException e) {
+//            throw new RuntimeException(e);
+//        }
         FleetsApi fleetsApi = new FleetsApi();
         Long fleetId = 0L;
         //非统帅不可登PAP
@@ -127,19 +224,27 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
 
         // 拉取系统中所有角色名单，不在系统中的直接忽略
         QueryWrapper<UserAccount> cWapper = new QueryWrapper<UserAccount>().in("character_name", sendUserList);
-        wrapper.eq(true, "corp_id", ConfigKit.get(CacheKey.EVE_MAIN_CORP));
+        cWapper.eq(true, "corp_id", ConfigKit.get(CacheKey.EVE_MAIN_CORP));
         List<UserAccount> userAccountList = userAccountMapper.selectList(cWapper);
 
         if (userAccountList.isEmpty()) {
             throw new BizException("PAP发放失败,您复制的名单在系统中均为注册");
         }
-        PapLogQuery papLogQuery = new PapLogQuery();
-        papLogQuery.setUserId(StpUtil.getLoginId());
-        papLogQuery.setAccountId(papCreator.getId());
-        Page<PAPLog> logPage = listPapLogByAccountId(papLogQuery);
-        if (logPage.getTotal() > 0) {
+        List<PAPLog> list = papLogMapper.selectList(new QueryWrapper<PAPLog>().eq("user_id", StpUtil.getLoginId()).eq("fleet_id", fleetId));
+        if (!list.isEmpty()) {
+            Map<Long, PAPLog> papLogMap =
+                    list.stream().collect(Collectors.toMap(PAPLog::getAccountId,
+                            Function.identity(), (key1, key2) -> key1));
+            if (papLogMap.isEmpty()) {
+                throw new BizException("papLogMap 错误.");
+            }
+            for (UserAccount userAccount : userAccountList) {
+                userAccount.setPap(userAccount.getPap().subtract(papLogMap.get(userAccount.getId()).getPap()));
+                userAccount.updateById();
+            }
             //重新删除重登陆
-            papLogMapper.delete(new QueryWrapper<PAPLog>().eq("create_id", papCreator.getUserId()).eq("fleet_id",
+            papLogMapper.delete(new QueryWrapper<PAPLog>().eq("create_id", papCreator.getUserId()).eq(
+                    "fleet_id",
                     fleetId));
         }
         List<PAPLog> saveLogList = new ArrayList<>();
@@ -157,8 +262,11 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
 
             userAccount.setPap(userAccount.getPap().add(sendPAPDto.getPap()));
             userAccount.updateById();
-
+            //更新total PAP
+//            userAccountService.update(new UpdateWrapper<UserAccount>().eq("use_id", userAccount.getUserId()).set(
+//                    "total_pap", userAccount.getTotalPap().add(sendPAPDto.getPap())));
         }
+
         baseMapper.batchPAPInsert(saveLogList);
     }
 

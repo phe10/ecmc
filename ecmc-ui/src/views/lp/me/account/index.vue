@@ -6,9 +6,9 @@
       <template #toolbar>
         <Alert type="success" style="height: 32px">
           <template #message>
-            （仅统计本页面, 角色过多请手动选择分页数据） 总获取LP：{{ totalLP }}，剩余LP：{{
+            （仅统计本页面） 总获取LP：{{ totalLP }}，剩余LP：{{
               nowLP
-            }}，已使用LP：{{ useLP }}
+            }}，已使用LP：{{ useLP }} ,  总PAP：{{ pap }}
           </template>
         </Alert>
       </template>
@@ -73,15 +73,17 @@ const [registerTable, { getSelectRowKeys, setSelectedRowKeys }] = useTable({
 const totalLP = ref(0)
 const nowLP = ref(0)
 const useLP = ref(0)
-
+const pap = ref(0)
 function handlerSuccess(data) {
   totalLP.value = 0
   nowLP.value = 0
   useLP.value = 0
+  pap.value = 0
   data.items.forEach(item => {
     totalLP.value += item.lpTotal
     useLP.value += item.lpUse
     nowLP.value += item.lpNow
+    pap.value += item.pap
   })
 }
 

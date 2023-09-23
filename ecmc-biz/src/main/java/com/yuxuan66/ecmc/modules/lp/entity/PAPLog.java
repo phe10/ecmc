@@ -56,5 +56,8 @@ public class PAPLog extends BaseEntity<PAPLog> implements Serializable {
      * 创建者
      */
     private String createBy;
+
+//    @TableField(exist = false)
+//    private UserAccount userAccount;
 }
 

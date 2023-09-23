@@ -5,7 +5,7 @@
         <a-button type="primary" @click="handleFly" preIcon="fly|svg">发放PAP</a-button>
       </template>
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'characterName'">
+          <template v-if="column.key === 'characterName'">
           <img class="table-head"
                :src="`https://images.evetech.net/characters/${record.characterId}/portrait?size=32`"
                alt=""/>
@@ -41,13 +41,10 @@
           <img class="table-head"
                :src="`https://images.evetech.net/characters/${record.commanderId}/portrait?size=32`"
                alt=""/>
-          <span style="margin-left: 10px">{{ record.commanderName }}</span>
+          <span style="margin-left: 10px">{{ record.commander }}</span>
         </template>
-        <template v-if="column.key === 'status'">
-          {{ record.status }}
-        </template>
-        <template v-if="column.key === 'papTime'">
-          {{ record.papTime }}
+        <template v-if="column.key === 'createTime'">
+          {{ record.createTime }}
         </template>
 <!--        <template v-if="column.key === 'status'">-->
 <!--          <Tag :color="record.status === 0 ? 'processing' : 'error'">-->
@@ -63,7 +60,7 @@
 import { reactive } from 'vue'
 
 import { BasicTable, TableAction, useTable } from '/@/components/Table'
-import {  listAll } from '/@/api/account/userAccount'
+import {  listMembers } from '/@/api/lp/pap'
 import { PageWrapper } from '/@/components/Page'
 import { Tag } from 'ant-design-vue'
 import { useModal } from '/@/components/Modal'
@@ -73,9 +70,9 @@ import FormModal from './FormModal.vue'
 const [registerModal, { openModal }] = useModal()
 const searchInfo = reactive<Recordable>({})
 const [registerTable, { reload, getSelectRows }] = useTable({
-  title: '角色列表',
-  api: listAll,
-  rowKey: 'id',
+  title: 'PAP列表',
+  api: listMembers,
+  rowKey: 'characterName',
   columns,
   beforeFetch: handleBeforeFetch,
   defSort: {
@@ -109,7 +106,7 @@ function handleBeforeFetch(params) {
 function handleFly(record: Recordable) {
   let characterNames:any = []
   if (record.characterName) {
-      characterNames.push(record.characterName)
+    characterNames.push(record.characterName)
   } else {
     let rows = getSelectRows()
     rows.forEach(item => characterNames.push(item.characterName))

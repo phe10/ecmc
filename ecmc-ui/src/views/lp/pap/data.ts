@@ -1,4 +1,4 @@
-import {BasicColumn, FormSchema} from '/@/components/Table'
+import { BasicColumn, FormSchema } from '/@/components/Table'
 
 
 export const columns: BasicColumn[] = [
@@ -28,11 +28,6 @@ export const columns: BasicColumn[] = [
     width: 120
   },
   {
-    title: '本次是否PAP',
-    dataIndex: 'status',
-    width: 120
-  },
-  {
     title: 'PAP时间',
     dataIndex: 'createTime',
     width: 120
@@ -43,7 +38,7 @@ export const searchFormSchema: FormSchema[] = [
   {
     field: 'blurry',
     component: 'Input',
-    colProps: {span: 6},
+    colProps: { span: 6 },
     componentProps: {
       placeholder: '输入角色名搜索',
     }
@@ -79,15 +74,15 @@ export const crudFormSchema: FormSchema[] = [
     }
 
   },
-  {
-    field: 'createdBy',
-    label: '登记人',
-    component: 'InputTextArea',
-    componentProps: {
-      rows: 1
-    }
-
-  }
+  // {
+  //   field: 'createdBy',
+  //   label: '登记人',
+  //   component: 'InputTextArea',
+  //   componentProps: {
+  //     rows: 1
+  //   }
+  //
+  // }
   // ,
   // {
   //   field: 'corp',

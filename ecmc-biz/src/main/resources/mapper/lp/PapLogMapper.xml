@@ -29,28 +29,28 @@
 
     </resultMap>
 
-    <select id="selectPapLog" resultMap="papLog">
-        select * from corp_pap_log srp left join corp_user_account cua on srp.account_id = cua.id
-        <where>
-            <if test="query.blurry != null and query.blurry != ''">
-                and (srp.character_name like concat('%',#{query.blurry},'%') or srp.content like concat('%',#{query.blurry},'%') )
-            </if>
-            <if test="query.account_id != null">
-                and srp.account_id = #{query.accountId}
-            </if>
-            <if test="query.userId != null">
-                and srp.user_id = #{query.userId}
-            </if>
-        </where>
-        order by srp.create_time desc
-    </select>
+<!--    <select id="selectPapLog" resultMap="papLog">-->
+<!--        select * from corp_pap_log srp left join corp_user_account cua on srp.account_id = cua.id-->
+<!--        <where>-->
+<!--            <if test="query.blurry != null and query.blurry != ''">-->
+<!--                and (srp.character_name like concat('%',#{query.blurry},'%') or srp.content like concat('%',#{query.blurry},'%') )-->
+<!--            </if>-->
+<!--            <if test="query.account_id != null">-->
+<!--                and srp.account_id = #{query.accountId}-->
+<!--            </if>-->
+<!--            <if test="query.userId != null">-->
+<!--                and srp.user_id = #{query.userId}-->
+<!--            </if>-->
+<!--        </where>-->
+<!--        order by srp.create_time desc-->
+<!--    </select>-->
 
     <!-- 批量插入 -->
     <insert id="batchPAPInsert">
         INSERT INTO corp_pap_log VALUES
         <foreach collection="papLogList" item="item" separator=",">
             (null,#{item.userId},#{item.accountId},#{item.characterName},#{item.fleetId},#{item.pap},
-            #{item.content},#{item.createBy},#{item.createId},#{item.createTime})
+            #{item.content},#{item.createBy},#{item.createId},#{item.createTime},null,null,null)
         </foreach>
     </insert>
 

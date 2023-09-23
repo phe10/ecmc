@@ -10,3 +10,7 @@ enum Api {
 export const sendPAP = (sendPAPInfo?: object) => {
   return defHttp.post({ url: Api.Base+'/sendPAP', params: sendPAPInfo })
 }
+
+export const listMembers = (params: object) => {
+  return defHttp.get<object>({ url: Api.Base + '/searchFleetMemebers', params })
+}
