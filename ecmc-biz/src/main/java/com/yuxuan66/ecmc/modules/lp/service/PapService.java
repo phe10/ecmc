@@ -239,8 +239,10 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
                 throw new BizException("papLogMap 错误.");
             }
             for (UserAccount userAccount : userAccountList) {
-                userAccount.setPap(userAccount.getPap().subtract(papLogMap.get(userAccount.getId()).getPap()));
-                userAccount.updateById();
+                if (papLogMap.get(userAccount.getId()) != null) {
+                    userAccount.setPap(userAccount.getPap().subtract(papLogMap.get(userAccount.getId()).getPap()));
+                    userAccount.updateById();
+                }
             }
             //重新删除重登陆
             papLogMapper.delete(new QueryWrapper<PAPLog>().eq("create_id", papCreator.getUserId()).eq(
