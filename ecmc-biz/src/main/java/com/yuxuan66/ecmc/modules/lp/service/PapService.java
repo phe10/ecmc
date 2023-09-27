@@ -82,6 +82,7 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
 //    }
 
     public List<FleetMemebers> fleetMemebers(FleetMemebersQuery fleetMemebersQuery) {
+        //TODO 后续如果要做帮其他人PAP可以从前台传入指挥官信息。
         if (StringUtils.isBlank(fleetMemebersQuery.getCommander())) {
             List<UserAccount> userAccountList = userAccountService.query().eq("user_id", StpUtil.getLoginId()).list();
             UserAccount userAccount = userAccountList.get(0);
@@ -93,71 +94,82 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
         List<UserAccount> creatorUserAccountList = userAccountMapper.selectList(wrapper);
         //非注册用户，非本军团成员不能PAP
         if (creatorUserAccountList.isEmpty()) {
-            return new ArrayList<FleetMemebers>();
+            throw new BizException("没有一个是本军团成员，不可以PAP");
         }
         UserAccount papCreator = creatorUserAccountList.get(0);
         List<FleetMemebers> memebers = new ArrayList<>();
         FleetsApi fleetsApi = new FleetsApi();
+
+        papCreator.esiClient();
+        CharacterFleetResponse characterFleetResponse = null;
         try {
-            papCreator.esiClient();
-            CharacterFleetResponse characterFleetResponse =
-                    fleetsApi.getCharactersCharacterIdFleet(papCreator.getCharacterId(), null, null,
-                            papCreator.getAccessToken());
-            Long fleetId = characterFleetResponse.getFleetId();
-            if (fleetId == null || fleetId == 0L) {
-                throw new BizException("Cant find a fleet of this commander.");
-            }
-            List<FleetMembersResponse> fleetMembersResponseList = fleetsApi.getFleetsFleetIdMembers(fleetId, "zh",
+            characterFleetResponse = fleetsApi.getCharactersCharacterIdFleet(papCreator.getCharacterId(), null, null,
+                    papCreator.getAccessToken());
+        } catch (ApiException e) {
+            throw new BizException("获取指挥官所在的舰队信息失败，可能ESI服务器存在问题，稍后再试.");
+        }
+        Long fleetId = characterFleetResponse.getFleetId();
+        if (fleetId == null || fleetId == 0L) {
+            throw new BizException("当前登陆用户不在一个舰队中.");
+        }
+        List<FleetMembersResponse> fleetMembersResponseList = null;
+        try {
+            fleetMembersResponseList = fleetsApi.getFleetsFleetIdMembers(fleetId, "zh",
                     null, null,
                     "zh",
                     papCreator.getAccessToken());
-            Map<Integer, FleetMembersResponse> fleetMembersResponseMap =
-                    fleetMembersResponseList.stream().collect(Collectors.toMap(FleetMembersResponse::getCharacterId,
-                            Function.identity(), (key1, key2) -> key1));
-            List<Integer> cIds = new ArrayList<>();
-            boolean areUComd = false;
-            for (FleetMembersResponse fleetMembersResponse : fleetMembersResponseList) {
-                FleetMembersResponse.RoleEnum role = fleetMembersResponse.getRole();
-                if (FleetMembersResponse.RoleEnum.FLEET_COMMANDER == role
-                        && fleetMembersResponse.getCharacterId().equals(papCreator.getCharacterId())) {
-                    areUComd = true;
-                }
-                cIds.add(fleetMembersResponse.getCharacterId());
-            }
-            if (!areUComd) {
-                throw new BizException("Are u Commander?");
-            }
-            QueryWrapper<UserAccount> cWapper = new QueryWrapper<UserAccount>().in("character_id", cIds);
-            wrapper.eq(true, "corp_id", ConfigKit.get(CacheKey.EVE_MAIN_CORP));
-            List<UserAccount> userAccountList = userAccountMapper.selectList(cWapper);
-            if (userAccountList.isEmpty()) {
-                throw new BizException("No user register system?");
-            }
-
-            for (UserAccount userAccount : userAccountList) {
-                FleetMemebers fleetMemebers = new FleetMemebers();
-                Integer shipId = fleetMembersResponseMap.get(userAccount.getCharacterId()).getShipTypeId();
-                TypeResponse typeResponse = eveCache.typeName(shipId);
-                if (typeResponse == null) {
-                    fleetMemebers.setShip("No Ship Found.");
-                } else {
-                    fleetMemebers.setShip(eveCache.typeName(shipId).getName());
-                }
-                fleetMemebers.setCharacterName(userAccount.getCharacterName());
-                fleetMemebers.setAllianceName(userAccount.getAllianceName());
-                fleetMemebers.setCorpName(userAccount.getCorpName());
-                fleetMemebers.setCreateTime(Lang.getNowTimestamp());
-                fleetMemebers.setCommander(papCreator.getCharacterName());
-                fleetMemebers.setCommanderId(papCreator.getCharacterId());
-                memebers.add(fleetMemebers);
-            }
         } catch (ApiException e) {
-            throw new BizException(StrUtil.format("has something wrong with esi api：{}", e.getMessage()));
+            throw new BizException("获取登陆用户所在的舰队信息失败，可能ESI服务器存在问题，稍后再试.");
+        }
+        if (fleetMembersResponseList == null) {
+            throw new BizException("当前用户所在舰队已解散.");
+        }
+        Map<Integer, FleetMembersResponse> fleetMembersResponseMap =
+                fleetMembersResponseList.stream().collect(Collectors.toMap(FleetMembersResponse::getCharacterId,
+                        Function.identity(), (key1, key2) -> key1));
+        List<Integer> cIds = new ArrayList<>();
+        boolean areUComd = false;
+        for (FleetMembersResponse fleetMembersResponse : fleetMembersResponseList) {
+            FleetMembersResponse.RoleEnum role = fleetMembersResponse.getRole();
+            if (FleetMembersResponse.RoleEnum.FLEET_COMMANDER == role
+                    && fleetMembersResponse.getCharacterId().equals(papCreator.getCharacterId())) {
+                areUComd = true;
+            }
+            cIds.add(fleetMembersResponse.getCharacterId());
+        }
+        if (!areUComd) {
+            throw new BizException("当前用户不是本舰队的指挥官，不可以PAP.");
+        }
+        //获取舰队成员在系统的信息
+        QueryWrapper<UserAccount> cWapper = new QueryWrapper<UserAccount>().in("character_id", cIds);
+        wrapper.eq(true, "corp_id", ConfigKit.get(CacheKey.EVE_MAIN_CORP));
+        List<UserAccount> userAccountList = userAccountMapper.selectList(cWapper);
+        if (userAccountList.isEmpty()) {
+            throw new BizException("当前舰队没有一个是注册用户.");
+        }
+
+        for (UserAccount userAccount : userAccountList) {
+            FleetMemebers fleetMemebers = new FleetMemebers();
+            Integer shipId = fleetMembersResponseMap.get(userAccount.getCharacterId()).getShipTypeId();
+            TypeResponse typeResponse = eveCache.typeName(shipId);
+            if (typeResponse == null) {
+                fleetMemebers.setShip("No Ship Found.");
+            } else {
+                fleetMemebers.setShip(eveCache.typeName(shipId).getName());
+            }
+            fleetMemebers.setCharacterName(userAccount.getCharacterName());
+            fleetMemebers.setAllianceName(userAccount.getAllianceName());
+            fleetMemebers.setCorpName(userAccount.getCorpName());
+            fleetMemebers.setCreateTime(Lang.getNowTimestamp());
+            fleetMemebers.setCommander(papCreator.getCharacterName());
+            fleetMemebers.setCommanderId(papCreator.getCharacterId());
+            memebers.add(fleetMemebers);
         }
         return memebers;
     }
 
     public void sendPAP(SendPAPDto sendPAPDto) {
+        //使用当前用户的主角色进行PAP
         UserAccount papCreator =
                 userAccountService.query().eq("user_id", StpUtil.getLoginId()).eq("is_main", 1).one();
         if (papCreator == null) {
@@ -196,21 +208,23 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
 //        }
         FleetsApi fleetsApi = new FleetsApi();
         Long fleetId = 0L;
-        //非统帅不可登PAP
+
+        CharacterFleetResponse characterFleetResponse = null;
         try {
-            CharacterFleetResponse characterFleetResponse = fleetsApi.getCharactersCharacterIdFleet(papCreator.getCharacterId(), null, null,
+            characterFleetResponse = fleetsApi.getCharactersCharacterIdFleet(papCreator.getCharacterId(), null, null,
                     papCreator.getAccessToken());
-            fleetId = characterFleetResponse.getFleetId();
-            if (characterFleetResponse.getFleetBossId().intValue() != papCreator.getCharacterId()) {
-                log.warn("PAP creator is not boss:" + papCreator.getCharacterName());
-                return;
-            }
         } catch (ApiException e) {
-            throw new RuntimeException(e);
+            throw new BizException("获取登陆用户所在的舰队信息失败，可能ESI服务器存在问题，稍后再试.");
         }
+        //非统帅不可登PAP
+        fleetId = characterFleetResponse.getFleetId();
+        if (characterFleetResponse.getFleetBossId().intValue() != papCreator.getCharacterId()) {
+            log.warn("PAP creator is not boss:" + papCreator.getCharacterName());
+            throw new BizException("当前用户不是舰队统帅，请检查游戏内信息.");
+        }
+
         //开始登PAP
         String[] userList = sendPAPDto.getPapUsers().split("\n");
-
         // 处理正确的角色名称
         List<String> sendUserList = new ArrayList<>();
 
@@ -228,16 +242,13 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
         List<UserAccount> userAccountList = userAccountMapper.selectList(cWapper);
 
         if (userAccountList.isEmpty()) {
-            throw new BizException("PAP发放失败,您复制的名单在系统中均为注册");
+            throw new BizException("PAP发放失败,您复制的名单在系统中均未注册");
         }
         List<PAPLog> list = papLogMapper.selectList(new QueryWrapper<PAPLog>().eq("user_id", StpUtil.getLoginId()).eq("fleet_id", fleetId));
         if (!list.isEmpty()) {
             Map<Long, PAPLog> papLogMap =
                     list.stream().collect(Collectors.toMap(PAPLog::getAccountId,
                             Function.identity(), (key1, key2) -> key1));
-            if (papLogMap.isEmpty()) {
-                throw new BizException("papLogMap 错误.");
-            }
             for (UserAccount userAccount : userAccountList) {
                 if (papLogMap.get(userAccount.getId()) != null) {
                     userAccount.setPap(userAccount.getPap().subtract(papLogMap.get(userAccount.getId()).getPap()));
