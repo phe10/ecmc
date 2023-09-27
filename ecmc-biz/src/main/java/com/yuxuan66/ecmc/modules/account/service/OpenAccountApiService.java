@@ -319,9 +319,11 @@ public class OpenAccountApiService extends BaseService<UserAccount, UserAccountM
 
 
     private Map<String, String> getPap() {
-        HttpRequest request = HttpUtil.createGet("https://seat.winterco.space/character/view/paps/2117284154?division=monthly&month=" + (DateUtil.thisMonth() + 1) + "&year=" + DateUtil.thisYear() + "&_=" + System.currentTimeMillis());
+        String charactorId = ConfigKit.get(CacheKey.SEAT_COOKIE_CID);
+        HttpRequest request = HttpUtil.createGet("https://seat.winterco.space/character/view/paps/"+charactorId+"?division" +
+                "=monthly&month=" + (DateUtil.thisMonth() + 1) + "&year=" + DateUtil.thisYear() + "&_=" + System.currentTimeMillis());
         request.cookie(ConfigKit.get(CacheKey.SEAT_COOKIE));
-        request.header("referer", "https://seat.winterco.space/character/view/paps/2117284154");
+        request.header("referer", "https://seat.winterco.space/character/view/paps/"+charactorId);
         request.header("x-requested-with", "XMLHttpRequest");
         String body = request.execute().body();
         Map<String, String> map = new HashMap<>();

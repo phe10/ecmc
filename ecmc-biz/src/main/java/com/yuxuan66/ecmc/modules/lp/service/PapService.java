@@ -283,4 +283,7 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
         baseMapper.batchPAPInsert(saveLogList);
     }
 
+    public void papTransfor2Lp() {
+
+    }
 }

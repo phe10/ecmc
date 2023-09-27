@@ -40,4 +40,6 @@ public interface CacheKey extends UploadCacheKey, AliyunCacheKey, EveCacheKey, W
      * 模板哭了
      */
     String TEMPLATE_PATH = "template.path";
+
+    String SEAT_COOKIE_CID = "seat.cookie.cid";
 }
