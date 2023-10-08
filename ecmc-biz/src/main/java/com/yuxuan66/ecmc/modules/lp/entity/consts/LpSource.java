@@ -40,8 +40,9 @@ public enum LpSource {
     /**
      * 超网订单
      */
-    ULTRA_NET_ORDER(7, "超网订单");
+    ULTRA_NET_ORDER(7, "超网订单"),
 
+    AUTO_DEC(8, "自动折算");
     @JsonValue
     @EnumValue
     private final Integer value;

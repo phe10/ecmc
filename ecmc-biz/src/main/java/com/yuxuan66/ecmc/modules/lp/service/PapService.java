@@ -1,5 +1,7 @@
 package com.yuxuan66.ecmc.modules.lp.service;
 
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -12,6 +14,7 @@ import com.yuxuan66.ecmc.common.utils.Lang;
 import com.yuxuan66.ecmc.common.utils.StpUtil;
 import com.yuxuan66.ecmc.modules.account.entity.UserAccount;
 import com.yuxuan66.ecmc.modules.account.mapper.UserAccountMapper;
+import com.yuxuan66.ecmc.modules.account.service.OpenAccountApiService;
 import com.yuxuan66.ecmc.modules.account.service.UserAccountService;
 import com.yuxuan66.ecmc.modules.lp.entity.FleetMemebers;
 import com.yuxuan66.ecmc.modules.lp.entity.LpLog;
@@ -35,14 +38,14 @@ import net.troja.eve.esi.api.CorporationApi;
 import net.troja.eve.esi.api.FleetsApi;
 import net.troja.eve.esi.model.*;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -64,6 +67,9 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
 
     @Resource
     private EveCache eveCache;
+
+    @Resource
+    private OpenAccountApiService accountApiService;
 
     @Resource
     private UserAccountService userAccountService;
@@ -283,7 +289,33 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
         baseMapper.batchPAPInsert(saveLogList);
     }
 
-    public void papTransfor2Lp() {
-
+    @Async("threadPoolTaskExecutor")
+    public void alliancePapSync(UserAccount userAccount, Double pap) {
+        List<PAPLog> list =
+                papLogMapper.selectList(new QueryWrapper<PAPLog>().eq("account_id", userAccount.getId()).eq("content"
+                        , "联盟PAP"));
+        /**
+         * 如果不存在则新建，联盟PAP只存在一条记录，每月末更新
+         */
+        if (CollectionUtils.isEmpty(list)) {
+            PAPLog log = new PAPLog();
+            log.setCharacterName(userAccount.getCharacterName());
+            log.setAccountId(userAccount.getId());
+            log.setUserId(userAccount.getUserId());
+            log.setPap(new BigDecimal(pap));
+            log.setContent("联盟PAP");
+            log.setCreateId(StpUtil.getLoginId());
+            log.setCreateBy("联盟");
+            log.setFleetId(0L);
+        } else {
+            /**
+             * 如果存在则更新
+             */
+            PAPLog papLog = list.get(0);
+            if (papLog != null) {
+                papLog.setPap(new BigDecimal(pap));
+                papLog.updateById();
+            }
+        }
     }
 }

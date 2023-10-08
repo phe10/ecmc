@@ -318,7 +318,7 @@ public class OpenAccountApiService extends BaseService<UserAccount, UserAccountM
     }
 
 
-    private Map<String, String> getPap() {
+    public Map<String, String> getPap() {
         String charactorId = ConfigKit.get(CacheKey.SEAT_COOKIE_CID);
         HttpRequest request = HttpUtil.createGet("https://seat.winterco.space/character/view/paps/"+charactorId+"?division" +
                 "=monthly&month=" + (DateUtil.thisMonth() + 1) + "&year=" + DateUtil.thisYear() + "&_=" + System.currentTimeMillis());

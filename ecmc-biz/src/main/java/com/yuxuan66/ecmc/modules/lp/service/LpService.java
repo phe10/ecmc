@@ -9,6 +9,7 @@ import com.yuxuan66.ecmc.common.consts.Const;
 import com.yuxuan66.ecmc.common.utils.StpUtil;
 import com.yuxuan66.ecmc.modules.account.entity.UserAccount;
 import com.yuxuan66.ecmc.modules.account.mapper.UserAccountMapper;
+import com.yuxuan66.ecmc.modules.account.service.UserAccountService;
 import com.yuxuan66.ecmc.modules.lp.entity.LpLog;
 import com.yuxuan66.ecmc.modules.lp.entity.consts.LpSource;
 import com.yuxuan66.ecmc.modules.lp.entity.consts.LpType;
@@ -19,12 +20,17 @@ import com.yuxuan66.ecmc.modules.system.service.UserService;
 import com.yuxuan66.ecmc.support.base.BaseService;
 import com.yuxuan66.ecmc.support.exception.BizException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Sir丶雨轩
@@ -38,6 +44,9 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
     private final UserService userService;
     @Resource
     private UserAccountMapper userAccountMapper;
+
+    @Resource
+    private UserAccountService userAccountService;
 
     /**
      * 给指定用户发放LP
@@ -114,5 +123,92 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
         return baseMapper.selectLpLog(lpLogQuery.getPage(), lpLogQuery);
     }
 
+    @Async("threadPoolTaskExecutor")
+    public void pap2lp() {
+        //系数判断
+        // int systemPapCOTM = 0;
+        //先清理上个月的，每个账户乘以0.6也就是减少0.4
+        List<UserAccount> userAccountList = userAccountMapper.selectList(null);
+        List<LpLog> decSaveLog = new ArrayList<>();
+        for (UserAccount userAccount : userAccountList) {
+            LpLog log = new LpLog();
+            log.setCharacterName(userAccount.getCharacterName());
+            log.setAccountId(userAccount.getId());
+            log.setUserId(userAccount.getUserId());
 
+            log.setLp(userAccount.getLpNow().multiply(new BigDecimal("0.4")));
+            log.setSource(LpSource.AUTO_DEC);
+            log.setType(LpType.EXPENDITURE);
+            log.setContent("联盟PAP转化LP");
+            decSaveLog.add(log);
+
+            //当前可用的60%
+            userAccount.setLpNow(userAccount.getLpNow().multiply(new BigDecimal("0.6")));
+            //已经被用掉40%
+            userAccount.setLpUse(userAccount.getLpUse().add(userAccount.getLpNow().multiply(new BigDecimal("0.4"))));
+//            userAccount.setLpTotal(userAccount.getLpTotal()));
+            userAccount.updateById();
+        }
+        baseMapper.batchInsert(decSaveLog);
+
+
+        Map<Long, List<UserAccount>> userId2AccountList = new HashMap<>();
+        for (UserAccount userAccount : userAccountList) {
+            if (userAccount.getUserId() == null) {
+                continue;
+            }
+            if (userId2AccountList.get(userAccount.getUserId()) == null) {
+                List<UserAccount> list = new ArrayList<>();
+                list.add(userAccount);
+                userId2AccountList.put(userAccount.getUserId(), list);
+            } else {
+                List<UserAccount> userAccounts = userId2AccountList.get(userAccount.getUserId());
+                userAccounts.add(userAccount);
+            }
+        }
+        Map<Long, BigDecimal> totalPAP = new HashMap<>();
+        for (Long userId : userId2AccountList.keySet()) {
+            List<UserAccount> userAccounts = userId2AccountList.get(userId);
+            BigDecimal totalPapOfUser = BigDecimal.ZERO;
+            for (UserAccount userAccount : userAccounts) {
+                if (userAccount.getPap() != null) {
+                    totalPapOfUser = totalPapOfUser.add(userAccount.getPap());
+                }
+            }
+            totalPAP.put(userId, totalPapOfUser);
+        }
+        if (CollectionUtils.isEmpty(totalPAP)) {
+            return;
+        }
+        List<LpLog> saveLogList = new ArrayList<>();
+        //进行当月的PAP转化成LP，加到主账号上
+        for (Long userId : totalPAP.keySet()) {
+            if (totalPAP.get(userId) == null) {
+                continue;
+            }
+            BigDecimal three = new BigDecimal(3);
+            //小于3不转化
+            if (totalPAP.get(userId).compareTo(three) < 0) {
+                continue;
+            }
+            //转化只更新到主账号
+            UserAccount mainAccount =
+                    userAccountService.query().eq("user_id", userId).eq("is_main", 1).one();
+            LpLog log = new LpLog();
+            log.setCharacterName(mainAccount.getCharacterName());
+            log.setAccountId(mainAccount.getId());
+            log.setUserId(mainAccount.getUserId());
+
+            log.setLp(totalPAP.get(userId));
+            log.setSource(LpSource.PAP);
+            log.setType(LpType.INCOME);
+            log.setContent("联盟PAP转化LP");
+            saveLogList.add(log);
+            // 更新用户的LP
+            mainAccount.setLpNow(mainAccount.getLpNow().add(totalPAP.get(userId)));
+            mainAccount.setLpTotal(mainAccount.getLpTotal().add(totalPAP.get(userId)));
+            mainAccount.updateById();
+        }
+        baseMapper.batchInsert(saveLogList);
+    }
 }
