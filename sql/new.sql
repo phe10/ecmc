@@ -1,3 +1,4 @@
+use eve_corp_manager_cacx;
 create table if not exists corp_account_contract
 (
     id                      bigint auto_increment
@@ -805,9 +806,264 @@ create table if not exists sys_users_roles
 )
     comment '系统-用户角色关联表' charset = utf8mb4;
 
+create table if not exists corp_pap_log
+(
+    id             bigint auto_increment
+        primary key,
+    user_id        bigint                              null comment '用户ID',
+    account_id     bigint                              null comment '角色ID',
+    character_name varchar(100) collate utf8mb4_bin    null comment '角色名',
+    fleet_id       bigint                              null comment '舰队id',
+    pap            decimal(11, 2)                      null comment 'PAP数量',
+    content        varchar(200) collate utf8mb4_bin    null comment '说明',
+    create_by      varchar(100) collate utf8mb4_bin    null,
+    create_id      bigint                              null,
+    create_time    timestamp default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP,
+    update_time    timestamp                           null,
+    update_id      bigint                              null,
+    update_by      varchar(100)                        null
+)
+    comment '军团PAP登记表' charset = utf8mb4;
+
+create index corp_pap_log_user_id_account_id_index
+    on eve_corp_manager_cacx.corp_pap_log (user_id, account_id);
+
 # TODO init from orignal db
 # insert into eve_corp_manager_cacx_test.sys_attach select * from eve_corp_manager_cacx.sys_attach;
 # insert into eve_corp_manager_cacx_test.sys_config select * from eve_corp_manager_cacx.sys_config;
 # insert into eve_corp_manager_cacx_test.sys_menu select * from eve_corp_manager_cacx.sys_menu;
 # insert into eve_corp_manager_cacx_test.sys_role select * from eve_corp_manager_cacx.sys_role;
 # insert into eve_corp_manager_cacx_test.sys_roles_menus select * from eve_corp_manager_cacx.sys_roles_menus;
+
+BEGIN;
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (1, 'aliyun.access.key', NULL, '阿里云key', NULL, '2022-12-13 21:48:58', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (2, 'aliyun.access.secret', NULL, '阿里云密钥', NULL, '2022-12-13 21:49:59', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (3, 'aliyun.oss.endpoint', NULL, '阿里云OSS的地域', NULL, '2022-12-13 21:47:14', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (4, 'aliyun.oss.bucket', NULL, '阿里云OSS的bucket', NULL, '2022-12-13 21:48:38', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (5, 'mail.user', NULL, '邮件发送账号', NULL, '2022-12-23 13:52:57', 1, 'Sir丶雨轩', NULL, NULL, NULL);
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (6, 'mail.pass', NULL, '邮件发送密码', NULL, '2022-12-23 13:52:57', 1, 'Sir丶雨轩', NULL, NULL, NULL);
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (7, 'mail.from', NULL, '邮件发送人', NULL, '2022-12-23 13:52:57', 1, 'Sir丶雨轩', NULL, NULL, NULL);
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (8, 'mail.host', NULL, '邮件域名', NULL, '2022-12-23 13:52:57', 1, 'Sir丶雨轩', NULL, NULL, NULL);
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (9, 'mail.port', NULL, '邮件端口', NULL, '2022-12-23 13:52:57', 1, 'Sir丶雨轩', NULL, NULL, NULL);
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (13, 'rsaPrivate', NULL, 'RSA私钥', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (14, 'rsaPublic', NULL, 'RSA公钥', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (20, 'eve.esi.client', NULL, 'EVE ESI ClientID', NULL, '2022-12-23 13:52:57', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (21, 'eve.esi.secret', NULL, 'EVE ESI SecretKey', NULL, '2022-12-13 21:50:47', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (22, 'eve.es.callback', NULL, 'EVE ESI 授权回调', NULL, '2022-12-13 21:51:11', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (264, 'web.site', NULL, '前端地址', NULL, '2022-12-13 21:41:28', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (644, 'eve.main.corp', NULL, 'EVE主军团ID', NULL, '2022-12-13 21:50:25', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (646, 'upload.local.path', NULL, '本地上传保存目录', NULL, NULL, NULL, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (647, 'upload.local.url', NULL, '本地上传保存URL', NULL, NULL, NULL, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (648, 'upload.type', NULL, '上传类型', '上传类型：1=本地文件，2=阿里云', '2022-12-13 21:45:00', 1, 'Sir丶雨轩', '2022-12-13 21:31:21', NULL, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (649, 'seat.cookie', NULL, '联盟通讯Cookie', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (650, 'discord.client.id', NULL, 'Discord客户端ID', NULL, NULL, NULL, NULL, '2023-01-11 11:34:13', 1, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (651, 'discord.public.key', NULL, 'Discord客户端密钥', NULL, NULL, NULL, NULL, '2023-01-11 11:34:42', 1, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (652, 'discord.redirect.uri', NULL, 'discord 授权回调', NULL, '2023-01-11 15:18:22', 1, 'Sir丶雨轩', '2023-01-11 13:04:42', 1, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (653, 'discord.client.secret', NULL, 'Discord客户端密钥', '', NULL, NULL, NULL, '2023-01-11 13:48:26', 1, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (654, 'discord.bot.token', NULL, 'Discord机器人Token', NULL, '2023-01-12 10:37:18', 1, 'Sir丶雨轩', '2023-01-12 09:17:44', 1, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (655, 'discord.corp.guilds', NULL, 'Discord军团频道ID', NULL, NULL, NULL, NULL, '2023-01-12 09:21:47', 1, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (656, 'discord.role.corp.member', NULL, 'Discord军团成员组ID', NULL, NULL, NULL, NULL, '2023-01-12 10:03:22', 1, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (657, 'discord.role.corp.admin', NULL, '军团总监组ID', NULL, NULL, NULL, NULL, '2023-01-12 10:03:49', 1, 'Sir丶雨轩');
+INSERT INTO `sys_config` (`id`, `name`, `value`, `title`, `remark`, `update_time`, `update_id`, `update_by`, `create_time`, `create_id`, `create_by`) VALUES (658, 'template.path', NULL, '图片模板目录', NULL, '2023-01-13 16:50:01', 1, 'Sir丶雨轩', '2023-01-13 16:01:16', 1, 'Sir丶雨轩');
+COMMIT;
+
+BEGIN;
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (1, '系统设置', 0, 0, 'setting|svg', 0, NULL, NULL, 0, 'system', '/system', 1, 'LAYOUT', 999, '2021-06-23 16:09:11', NULL, NULL, '2022-12-13 09:29:34', 1, 'Sir丶雨轩', NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (2, '用户管理', 1, 1, 'user|svg', 0, NULL, NULL, 0, 'user', 'user', 1, 'sys/user/index', 1, NULL, NULL, NULL, '2022-12-12 12:38:03', 1, 'Sir丶雨轩', NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (3, '菜单管理', 1, 1, 'menu|svg', 0, NULL, NULL, 0, 'menu', 'menu', 1, 'sys/menu/index', 2, NULL, NULL, NULL, NULL, 0, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (4, '角色管理', 1, 1, 'role|svg', 0, NULL, NULL, 0, 'role', 'role', 1, 'sys/role/index', 3, NULL, NULL, NULL, NULL, 0, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (5, '新增', 2, 2, NULL, 0, NULL, NULL, 0, 'user:add', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (6, '编辑', 2, 2, NULL, 0, NULL, NULL, 0, 'user:edit', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (7, '删除', 2, 2, NULL, 0, NULL, NULL, 0, 'user:del', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (8, '新增', 4, 2, NULL, 0, NULL, NULL, 0, 'role:add', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (9, '编辑', 4, 2, NULL, 0, NULL, NULL, 0, 'role:edit', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (10, '删除', 4, 2, NULL, 0, NULL, NULL, 0, 'role:del', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (11, '新增', 3, 2, NULL, 0, NULL, NULL, 0, 'menu:add', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (12, '编辑', 3, 2, NULL, 0, NULL, NULL, 0, 'menu:edit', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (13, '删除', 3, 2, NULL, 0, NULL, NULL, 0, 'menu:del', NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (14, '工作台', 0, 1, 'dashboard|svg', 0, NULL, NULL, 0, 'dashboard', 'dashboard', 1, 'dashboard/workbench/index', 1, NULL, NULL, NULL, NULL, NULL, NULL, 1);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (16, '详情', 2, 2, NULL, 0, NULL, NULL, NULL, 'user:details', NULL, 1, NULL, 999, '2022-12-12 12:45:57', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (17, 'ESI授权', 0, 1, 'anquan|svg', 0, NULL, NULL, 0, NULL, 'esi', 1, 'esi/index', 2, '2022-12-12 15:00:41', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (18, 'LP中心', 0, 0, 'lp|svg', 0, NULL, NULL, 0, NULL, '/lp', 1, 'LAYOUT', 4, '2022-12-13 09:30:39', 1, 'Sir丶雨轩', '2022-12-14 17:15:24', 1, 'Sir丶雨轩', NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (19, '发放LP', 18, 1, 'fly|svg', 0, NULL, NULL, 0, NULL, 'send', 1, 'lp/send/index', 1, '2022-12-13 09:36:05', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (20, '我的LP', 18, 1, 'yelp|svg', 0, NULL, NULL, 0, NULL, 'me', 1, 'lp/me/index', 2, '2022-12-13 13:00:12', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (21, '商品管理', 18, 1, 'goods|svg', 0, NULL, NULL, 0, NULL, 'goods', 1, 'lp/goods/index', 3, '2022-12-13 15:40:38', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (23, '系统配置', 1, 1, 'dept|svg', 0, NULL, NULL, 0, NULL, 'config', 1, 'sys/config/index', 4, '2022-12-13 21:08:51', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (24, '订单管理', 18, 1, 'order|svg', 0, NULL, NULL, 0, NULL, 'order', 1, 'lp/order/index', 4, '2022-12-14 09:07:04', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (25, '审批', 24, 2, NULL, 0, NULL, NULL, NULL, 'order:approval', NULL, NULL, NULL, 1, '2022-12-14 09:40:42', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (26, '查看', 24, 2, NULL, 0, NULL, NULL, NULL, 'order:view', NULL, NULL, NULL, 999, '2022-12-14 10:39:38', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (27, '发放记录', 18, 1, 'task|svg', 0, NULL, NULL, 0, NULL, 'log', 1, 'lp/log/index', 5, '2022-12-14 16:21:22', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (28, 'LP商城', 0, 1, 'shop|svg', 0, NULL, NULL, 0, NULL, 'shop', 1, 'lp/shop/index', 3, '2022-12-14 17:21:10', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (30, '发放', 19, 2, NULL, 0, NULL, NULL, NULL, 'lp:send', NULL, NULL, NULL, 1, '2022-12-22 11:17:57', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (31, '常用工具', 0, 0, 'util|svg', 0, NULL, NULL, 0, NULL, '/utils', 1, 'LAYOUT', 5, '2022-12-22 11:42:00', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (32, '留言板', 31, 1, 'liuyan|svg', 0, NULL, NULL, 0, NULL, 'talk', 1, 'utils/talk/index', 4, '2022-12-22 11:44:21', 1, 'Sir丶雨轩', '2022-12-22 11:44:41', 1, 'Sir丶雨轩', NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (33, '补损提交', 31, 1, 'kill|svg', 0, NULL, NULL, 0, NULL, 'srp', 1, 'utils/srp/index', 2, '2022-12-22 13:49:46', 1, 'Sir丶雨轩', '2023-01-11 10:53:16', 1, 'Sir丶雨轩', NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (34, '数据维护', 0, 0, 'database|svg', 0, NULL, NULL, 0, NULL, '/data', 1, 'LAYOUT', 6, '2022-12-24 15:24:29', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (35, '军团成员', 34, 1, 'dynamic-avatar-4|svg', 0, NULL, NULL, 0, NULL, 'member', 1, 'data/member/index', 1, '2022-12-24 15:25:38', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (36, '补损规则', 34, 1, 'rules|svg', 0, NULL, NULL, 0, NULL, 'srpRules', 1, 'data/srp/rules/index', 2, '2022-12-25 11:20:56', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (37, '新增', 36, 2, NULL, 0, NULL, NULL, NULL, 'srpRules:add', NULL, NULL, NULL, 1, '2022-12-25 12:21:00', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (38, '编辑', 36, 2, NULL, 0, NULL, NULL, NULL, 'srpRules:edit', NULL, NULL, NULL, 1, '2022-12-25 12:21:15', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (39, '删除', 36, 2, NULL, 0, NULL, NULL, NULL, 'srpRules:del', NULL, NULL, NULL, 1, '2022-12-25 12:21:27', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (40, '列表', 36, 2, NULL, 0, NULL, NULL, NULL, 'srpRules', NULL, NULL, NULL, 1, '2022-12-25 12:22:38', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (41, '补损黑名单', 34, 1, 'blacklist|svg', 0, NULL, NULL, 0, NULL, 'srpBlacklist', 1, 'data/srp/blacklist/index', 3, '2022-12-25 13:04:45', 1, 'Sir丶雨轩', '2022-12-25 13:07:48', 1, 'Sir丶雨轩', NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (42, '查看', 41, 2, NULL, 0, NULL, NULL, NULL, 'srpBlacklist', NULL, NULL, NULL, 1, '2022-12-25 13:06:11', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (43, '新增', 41, 2, NULL, 0, NULL, NULL, NULL, 'srpBlacklist:add', NULL, NULL, NULL, 1, '2022-12-25 13:06:25', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (44, '编辑', 41, 2, NULL, 0, NULL, NULL, NULL, 'srpBlacklist:edit', NULL, NULL, NULL, 1, '2022-12-25 13:06:36', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (45, '删除', 41, 2, NULL, 0, NULL, NULL, NULL, 'srpBlacklist:del', NULL, NULL, NULL, 1, '2022-12-25 13:06:55', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (46, '补损审批', 34, 1, 'sh|svg', 0, NULL, NULL, 0, NULL, 'srpExamine', 1, 'data/srp/examine/index', 4, '2022-12-25 13:49:43', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (47, '个人信息', 0, 0, 'dynamic-avatar-6|svg', 0, NULL, NULL, 0, NULL, '/account', 1, 'LAYOUT', 7, '2022-12-25 15:09:25', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (48, '钱包流水', 47, 1, 'wallet|svg', 0, NULL, NULL, 0, NULL, 'wallet', 1, 'account/wallet/index', 2, '2022-12-25 15:12:34', 1, 'Sir丶雨轩', '2022-12-26 17:19:00', 1, 'Sir丶雨轩', NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (49, '交易历史', 47, 1, 'order|svg', 0, NULL, NULL, 0, NULL, 'order', 1, 'account/order/index', 3, '2022-12-26 14:26:36', 1, 'Sir丶雨轩', '2022-12-26 17:19:04', 1, 'Sir丶雨轩', NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (50, '数据分析', 47, 1, 'total-sales|svg', 0, NULL, NULL, 0, NULL, 'analysis', 1, 'dashboard/analysis/index', 1, '2022-12-26 17:18:34', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (51, '查看', 50, 2, NULL, 0, NULL, NULL, NULL, 'view', NULL, NULL, NULL, 1, '2022-12-26 20:33:38', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (52, '查询全部', 50, 2, NULL, 0, NULL, NULL, NULL, 'analysis:all', NULL, NULL, NULL, 1, '2022-12-26 20:34:02', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (53, '合同管理', 47, 1, 'menu|svg', 0, NULL, NULL, 0, NULL, 'contract', 1, 'account/contract/index', 4, '2022-12-27 10:46:23', 1, 'Sir丶雨轩', NULL, NULL, NULL, NULL);
+INSERT INTO `sys_menu` (`id`, `name`, `pid`, `type`, `icon`, `is_link`, `frame`, `link_url`, `hidden`, `permission`, `path`, `cache`, `component`, `sort`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`, `affix`) VALUES (54, '加入Discord', 31, 1, 'discord|svg', 1, 0, 'http://discord.hd-eve.com/discord/auth', 0, NULL, 'http://discord.hd-eve.com/discord/auth', 1, NULL, 1, '2023-01-11 10:38:11', 1, 'Sir丶雨轩', '2023-01-11 15:07:46', 1, 'Sir丶雨轩', NULL);
+COMMIT;
+
+BEGIN;
+INSERT INTO `sys_role` (`id`, `name`, `remark`, `create_time`, `create_id`, `create_by`, `update_time`, `update_id`, `update_by`) VALUES (1, '超级管理员', '系统最高权限', '2022-09-19 14:09:02', NULL, NULL, '2022-12-14 10:19:07', 1, 'Sir丶雨轩');
+COMMIT;
+
+BEGIN;
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 1, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 2, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 3, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 4, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 5, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 6, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 7, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 8, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 9, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 10, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 11, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 12, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 13, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 14, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 16, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 17, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 18, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 19, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 20, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 21, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 23, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 24, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 25, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 26, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 27, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 28, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 30, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 31, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 32, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 33, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 34, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 35, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 36, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 37, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 38, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 39, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 40, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 41, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 42, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 43, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 44, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 45, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 46, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 47, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 48, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 49, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 50, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 51, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 52, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 53, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (1, 54, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 1, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 2, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 3, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 4, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 5, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 7, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 8, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 9, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 10, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 12, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (2, 14, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (3, 14, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (3, 17, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 14, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 17, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 18, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 20, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 24, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 26, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 27, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 28, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 31, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 32, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 33, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 34, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 36, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 40, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 41, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 42, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 47, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 48, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 49, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 50, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 51, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 53, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (4, 54, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (5, 18, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (5, 19, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (5, 30, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 34, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 36, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 37, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 38, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 39, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 40, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 41, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 42, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 43, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 44, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 45, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (6, 46, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (10, 18, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (10, 21, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (10, 24, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (10, 25, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 14, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 17, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 18, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 19, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 20, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 21, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 24, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 25, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 26, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 27, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 28, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 30, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 31, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 32, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 33, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 34, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 35, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 36, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 37, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 38, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 39, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 40, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 41, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 42, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 43, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 44, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 45, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 46, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 47, 1);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 48, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 49, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 50, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 51, 0);
+INSERT INTO `sys_roles_menus` (`role_id`, `menu_id`, `virtually`) VALUES (11, 52, 0);
+COMMIT;
