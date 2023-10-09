@@ -25,8 +25,6 @@ import java.util.Map;
 public class AlliancePapSyncJob {
 
     @Resource
-    private UserAccountMapper userAccountMapper;
-    private final OpenAccountApiService accountApiService;
     private final PapService papService;
 
     /**
@@ -35,11 +33,6 @@ public class AlliancePapSyncJob {
      */
     @Scheduled(cron = "0 20 * ? * *")
     public void process() throws Exception {
-        List<UserAccount> userAccountList = userAccountMapper.selectList(null);
-        Map<String, String> papMap = accountApiService.getPap();
-        for (UserAccount userAccount : userAccountList) {
-            double pap = Convert.toDouble(papMap.get(Convert.toStr(userAccount.getCharacterId())), 0D);
-            papService.alliancePapSync(userAccount,pap);
-        }
+        papService.alliancePapSync();
     }
 }

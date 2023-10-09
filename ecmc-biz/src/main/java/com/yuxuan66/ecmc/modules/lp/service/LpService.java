@@ -217,6 +217,9 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
             mainAccount.setLpTotal(mainAccount.getLpTotal().add(totalPAP.get(userId)));
             mainAccount.updateById();
         }
-        baseMapper.batchInsert(saveLogList);
+        if (!CollectionUtils.isEmpty(saveLogList)) {
+            baseMapper.batchInsert(saveLogList);
+        }
+
     }
 }

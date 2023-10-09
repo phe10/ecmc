@@ -1,12 +1,21 @@
 package com.yuxuan66.ecmc.modules.lp.rest;
 
+import cn.hutool.core.convert.Convert;
+import com.yuxuan66.ecmc.modules.account.entity.UserAccount;
+import com.yuxuan66.ecmc.modules.account.mapper.UserAccountMapper;
+import com.yuxuan66.ecmc.modules.account.service.OpenAccountApiService;
 import com.yuxuan66.ecmc.modules.lp.entity.dto.SendLpDto;
 import com.yuxuan66.ecmc.modules.lp.entity.query.LpLogQuery;
 import com.yuxuan66.ecmc.modules.lp.service.LpService;
+import com.yuxuan66.ecmc.modules.lp.service.PapService;
 import com.yuxuan66.ecmc.support.base.BaseController;
 import com.yuxuan66.ecmc.support.base.resp.Ps;
 import com.yuxuan66.ecmc.support.base.resp.Rs;
 import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Sir丶雨轩
@@ -16,6 +25,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/lp")
 public class LpController extends BaseController<LpService> {
 
+    @Resource
+    private OpenAccountApiService accountApiService;
+    @Resource
+    private UserAccountMapper userAccountMapper;
+
+    @Resource
+    private PapService papService;
 
     /**
      * 给指定用户发放LP
@@ -30,6 +46,7 @@ public class LpController extends BaseController<LpService> {
 
     /**
      * 查询指定角色或用户的LP历史
+     *
      * @param lpLogQuery 查询条件
      * @return LP历史
      */
@@ -47,5 +64,10 @@ public class LpController extends BaseController<LpService> {
     @GetMapping(path = "/listLpLog")
     public Ps listLpLog(LpLogQuery lpLogQuery) {
         return Ps.ok(baseService.listLpLog(lpLogQuery));
+    }
+
+    @GetMapping(path = "/paa")
+    public void paa() {
+        papService.alliancePapSync();
     }
 }

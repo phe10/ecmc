@@ -290,32 +290,52 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
     }
 
     @Async("threadPoolTaskExecutor")
-    public void alliancePapSync(UserAccount userAccount, Double pap) {
-        List<PAPLog> list =
-                papLogMapper.selectList(new QueryWrapper<PAPLog>().eq("account_id", userAccount.getId()).eq("content"
-                        , "联盟PAP"));
-        /**
-         * 如果不存在则新建，联盟PAP只存在一条记录，每月末更新
-         */
-        if (CollectionUtils.isEmpty(list)) {
-            PAPLog log = new PAPLog();
-            log.setCharacterName(userAccount.getCharacterName());
-            log.setAccountId(userAccount.getId());
-            log.setUserId(userAccount.getUserId());
-            log.setPap(new BigDecimal(pap));
-            log.setContent("联盟PAP");
-            log.setCreateId(StpUtil.getLoginId());
-            log.setCreateBy("联盟");
-            log.setFleetId(0L);
-        } else {
+    public void alliancePapSync() {
+        List<UserAccount> userAccountList = userAccountMapper.selectList(null);
+        Map<String, String> papMap = accountApiService.getPap();
+        List<PAPLog> papLogs = new ArrayList<>();
+        for (UserAccount userAccount : userAccountList) {
+            double pap = Convert.toDouble(papMap.get(Convert.toStr(userAccount.getCharacterId())), 0D);
+//            papService.alliancePapSync(userAccount,pap);
+            List<PAPLog> list =
+                    papLogMapper.selectList(new QueryWrapper<PAPLog>().eq("account_id", userAccount.getId()).eq("content"
+                            , "联盟PAP"));
             /**
-             * 如果存在则更新
+             * 如果不存在则新建，联盟PAP只存在一条记录，每月末更新
              */
-            PAPLog papLog = list.get(0);
-            if (papLog != null) {
-                papLog.setPap(new BigDecimal(pap));
-                papLog.updateById();
+            if (CollectionUtils.isEmpty(list)) {
+                PAPLog log = new PAPLog();
+                log.setCharacterName(userAccount.getCharacterName());
+                log.setAccountId(userAccount.getId());
+                log.setUserId(userAccount.getUserId());
+                log.setPap(new BigDecimal(pap));
+                log.setContent("联盟PAP");
+                log.setCreateId(null);
+                log.setCreateBy("联盟");
+                log.setFleetId(0L);
+                papLogs.add(log);
+                userAccount.setPap(userAccount.getPap().add(new BigDecimal(pap)));
+                userAccountService.updateById(userAccount);
+            } else {
+                /**
+                 * 如果存在则更新
+                 */
+                PAPLog papLog = list.get(0);
+                if (papLog != null) {
+                    //账号pap
+                    BigDecimal orignal = userAccount.getPap();
+                    //账号pap应该是更新联盟pap后加上两者的差
+                    BigDecimal after = orignal.add(new BigDecimal(pap).subtract(papLog.getPap()));
+                    userAccount.setPap(after);
+                    userAccount.updateById();
+
+                    papLog.setPap(new BigDecimal(pap));
+                    papLog.updateById();
+                }
             }
+        }
+        if (!CollectionUtils.isEmpty(papLogs)) {
+            baseMapper.batchPAPInsert(papLogs);
         }
     }
 }

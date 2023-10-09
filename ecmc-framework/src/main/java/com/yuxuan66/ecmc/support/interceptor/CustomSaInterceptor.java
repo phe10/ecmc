@@ -33,6 +33,7 @@ public class CustomSaInterceptor extends SaInterceptor {
                     // 放开ESI授权和回调
                     .notMatch("/esi/**")
                     .notMatch("/attach/upload")
+                    .notMatch("/lp/paa")
                     .check(r -> StpUtil.checkLogin());
         });
     }
