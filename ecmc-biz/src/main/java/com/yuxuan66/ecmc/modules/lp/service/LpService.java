@@ -142,15 +142,23 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
             log.setContent("联盟PAP转化LP");
             decSaveLog.add(log);
 
-            //当前可用的60%
-            userAccount.setLpNow(userAccount.getLpNow().multiply(new BigDecimal("0.6")));
+            boolean hasSome = userAccount.getLpNow() != null && userAccount.getLpNow().compareTo(BigDecimal.ZERO) > 0;
+            if (hasSome) {
+                //当前可用的60%
+                userAccount.setLpNow(userAccount.getLpNow().multiply(new BigDecimal("0.6")));
+            }
+            boolean hasUsesome = userAccount.getLpUse() != null && userAccount.getLpUse().compareTo(BigDecimal.ZERO) > 0;
             //已经被用掉40%
-            userAccount.setLpUse(userAccount.getLpUse().add(userAccount.getLpNow().multiply(new BigDecimal("0.4"))));
-//            userAccount.setLpTotal(userAccount.getLpTotal()));
-            userAccount.updateById();
+            if (hasUsesome) {
+                userAccount.setLpUse(userAccount.getLpUse().add(userAccount.getLpUse().multiply(new BigDecimal("0.4"))));
+            }
+            if (hasSome || hasUsesome) {
+                userAccount.updateById();
+            }
         }
-        baseMapper.batchInsert(decSaveLog);
-
+        if (!CollectionUtils.isEmpty(decSaveLog)) {
+            baseMapper.batchInsert(decSaveLog);
+        }
 
         Map<Long, List<UserAccount>> userId2AccountList = new HashMap<>();
         for (UserAccount userAccount : userAccountList) {

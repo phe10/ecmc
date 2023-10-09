@@ -7,6 +7,7 @@ import com.yuxuan66.ecmc.modules.utils.mapper.MessageBoardMapper;
 import com.yuxuan66.ecmc.support.base.BaseQuery;
 import com.yuxuan66.ecmc.support.base.BaseService;
 import com.yuxuan66.ecmc.support.base.resp.Ps;
+import com.yuxuan66.ecmc.support.exception.BizException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,9 @@ public class MessageBoardService extends BaseService<MessageBoard, MessageBoardM
      */
     public void add(MessageBoard messageBoard){
         UserAccount mainAccount = userAccountService.getMainAccount();
+        if(mainAccount == null){
+            throw new BizException("没有绑定主角色之前不能留言。");
+        }
         messageBoard.setAccountId(mainAccount.getId());
         messageBoard.setLikes(0);
         messageBoard.setCharacterId(mainAccount.getCharacterId());

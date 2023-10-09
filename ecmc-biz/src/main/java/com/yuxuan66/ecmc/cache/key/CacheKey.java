@@ -23,7 +23,7 @@ public interface CacheKey extends UploadCacheKey, AliyunCacheKey, EveCacheKey, W
 
 
     /**
-     * 邮件code保存
+     * 邮件code保存l
      */
     String EMAIL_CODE = "SYSTEM:CODE:EMAIL";
     /**
@@ -37,9 +37,9 @@ public interface CacheKey extends UploadCacheKey, AliyunCacheKey, EveCacheKey, W
      */
     String SEAT_COOKIE = "seat.cookie";
     /**
-     * 模板哭了
+     * 模板
      */
     String TEMPLATE_PATH = "template.path";
-
+    //TODO
     String SEAT_COOKIE_CID = "seat.cookie.cid";
 }

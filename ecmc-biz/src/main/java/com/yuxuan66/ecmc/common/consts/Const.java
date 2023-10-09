@@ -1,7 +1,7 @@
 package com.yuxuan66.ecmc.common.consts;
 
 /**
- * 全局的一些常量
+ * 角色常量
  *
  * @author Sir丶雨轩
  * @since 2022/12/14

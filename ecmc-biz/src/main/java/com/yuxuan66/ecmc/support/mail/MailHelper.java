@@ -19,7 +19,7 @@ public class MailHelper {
     public static MailAccount defaultMailAccount() {
         MailAccount mailAccount = new MailAccount();
         mailAccount.setAuth(true);
-        mailAccount.setSslEnable(false);
+        mailAccount.setSslEnable(true);
         mailAccount.setUser(ConfigKit.get(CacheKey.MAIL_USER));
         mailAccount.setFrom(ConfigKit.get(CacheKey.MAIL_FROM));
         mailAccount.setPass(ConfigKit.get(CacheKey.MAIL_PASS));

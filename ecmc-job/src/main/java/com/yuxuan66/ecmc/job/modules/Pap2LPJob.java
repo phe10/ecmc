@@ -30,10 +30,11 @@ public class Pap2LPJob {
     private final LpService lpService;
     /**
      * 每个月的28号23点进行PAP转化成LP
+     * 0 23 28 * *
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 23 28 * *")
+    @Scheduled(cron = "0 31 * ? * *")
     public void process() throws Exception {
         lpService.pap2lp();
     }
