@@ -68,6 +68,6 @@ public class LpController extends BaseController<LpService> {
 
     @GetMapping(path = "/paa")
     public void paa() {
-        baseService.pap2lp();
+        papService.alliancePapSync();
     }
 }

@@ -14,4 +14,5 @@ public interface PapLogMapper extends BaseMapper<PAPLog> {
 
     long batchPAPInsert(List<PAPLog> papLogList);
 
+    void cleanAlliencePap();
 }

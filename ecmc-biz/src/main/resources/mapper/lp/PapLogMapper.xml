@@ -54,4 +54,7 @@
         </foreach>
     </insert>
 
+    <update id="cleanAlliencePap">
+        update corp_pap_log set pap = 0 where content='联盟PAP'
+    </update>
 </mapper>

@@ -11,6 +11,7 @@ import com.yuxuan66.ecmc.modules.account.entity.UserAccount;
 import com.yuxuan66.ecmc.modules.account.mapper.UserAccountMapper;
 import com.yuxuan66.ecmc.modules.account.service.UserAccountService;
 import com.yuxuan66.ecmc.modules.lp.entity.LpLog;
+import com.yuxuan66.ecmc.modules.lp.entity.PAPLog;
 import com.yuxuan66.ecmc.modules.lp.entity.consts.LpSource;
 import com.yuxuan66.ecmc.modules.lp.entity.consts.LpType;
 import com.yuxuan66.ecmc.modules.lp.entity.dto.SendLpDto;
@@ -48,6 +49,9 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
 
     @Resource
     private UserAccountService userAccountService;
+
+    @Resource
+    private PapService papService;
 
     /**
      * 给指定用户发放LP
@@ -193,6 +197,7 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
             baseMapper.batchInsert(saveLogList);
         }
         userAccountMapper.cleanUserPap();
+        papService.makeupCleanLog(userAccountList);
     }
 
     @Async("threadPoolTaskExecutor")

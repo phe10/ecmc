@@ -341,4 +341,26 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
             baseMapper.batchPAPInsert(papLogs);
         }
     }
+
+    public void makeupCleanLog(List<UserAccount> userAccounts){
+        if(CollectionUtils.isEmpty(userAccounts)){
+            userAccounts = userAccountMapper.selectList(null);
+        }
+        List<PAPLog> papLogs = new ArrayList<>();
+        //添加一条扣减log，更新联盟特殊的paplog
+        for (UserAccount userAccount : userAccounts) {
+            PAPLog log = new PAPLog();
+            log.setCharacterName(userAccount.getCharacterName());
+            log.setAccountId(userAccount.getId());
+            log.setUserId(userAccount.getUserId());
+            log.setPap(BigDecimal.ZERO.subtract(userAccount.getPap()));
+            log.setContent("定期清理PAP");
+            log.setCreateId(null);
+            log.setCreateBy("系统");
+            log.setFleetId(0L);
+            papLogs.add(log);
+        }
+        baseMapper.batchPAPInsert(papLogs);
+        baseMapper.cleanAlliencePap();
+    }
 }
