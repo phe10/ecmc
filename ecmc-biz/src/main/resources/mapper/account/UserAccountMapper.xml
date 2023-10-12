@@ -57,5 +57,7 @@
             #{item.content},#{item.buyLogId},#{item.createBy},#{item.createId},#{item.createTime},null,null,null)
         </foreach>
     </insert>
-
+    <update id="cleanUserPap">
+        update corp_user_account set pap = 0 where 1 = 1
+    </update>
 </mapper>

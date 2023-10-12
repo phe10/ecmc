@@ -295,7 +295,7 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
         Map<String, String> papMap = accountApiService.getPap();
         List<PAPLog> papLogs = new ArrayList<>();
         for (UserAccount userAccount : userAccountList) {
-            double pap = Convert.toDouble(papMap.get(Convert.toStr(userAccount.getCharacterId())), 0D);
+            double alliancePap = Convert.toDouble(papMap.get(Convert.toStr(userAccount.getCharacterId())), 0D);
 //            papService.alliancePapSync(userAccount,pap);
             List<PAPLog> list =
                     papLogMapper.selectList(new QueryWrapper<PAPLog>().eq("account_id", userAccount.getId()).eq("content"
@@ -308,13 +308,13 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
                 log.setCharacterName(userAccount.getCharacterName());
                 log.setAccountId(userAccount.getId());
                 log.setUserId(userAccount.getUserId());
-                log.setPap(new BigDecimal(pap));
+                log.setPap(new BigDecimal(alliancePap));
                 log.setContent("联盟PAP");
                 log.setCreateId(null);
                 log.setCreateBy("联盟");
                 log.setFleetId(0L);
                 papLogs.add(log);
-                userAccount.setPap(userAccount.getPap().add(new BigDecimal(pap)));
+                userAccount.setPap(userAccount.getPap().add(new BigDecimal(alliancePap)));
                 userAccountService.updateById(userAccount);
             } else {
                 /**
@@ -324,13 +324,16 @@ public class PapService extends BaseService<PAPLog, PapLogMapper> {
                 if (papLog != null) {
                     //账号pap
                     BigDecimal orignal = userAccount.getPap();
-                    //账号pap应该是更新联盟pap后加上两者的差
-                    BigDecimal after = orignal.add(new BigDecimal(pap).subtract(papLog.getPap()));
-                    userAccount.setPap(after);
-                    userAccount.updateById();
+                    //如果联盟的pap清0则不需要更新
+                    if(alliancePap != 0){
+                        //账号pap应该是更新联盟pap后加上两者的差
+                        BigDecimal after = orignal.add(new BigDecimal(alliancePap).subtract(papLog.getPap()));
+                        userAccount.setPap(after);
+                        userAccount.updateById();
 
-                    papLog.setPap(new BigDecimal(pap));
-                    papLog.updateById();
+                        papLog.setPap(new BigDecimal(alliancePap));
+                        papLog.updateById();
+                    }
                 }
             }
         }

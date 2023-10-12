@@ -20,6 +20,7 @@ import com.yuxuan66.ecmc.modules.system.service.UserService;
 import com.yuxuan66.ecmc.support.base.BaseService;
 import com.yuxuan66.ecmc.support.exception.BizException;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,38 +129,8 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
         //系数判断
         // int systemPapCOTM = 0;
         //先清理上个月的，每个账户乘以0.6也就是减少0.4
+//        List<UserAccount> userAccountList = discountLp();
         List<UserAccount> userAccountList = userAccountMapper.selectList(null);
-        List<LpLog> decSaveLog = new ArrayList<>();
-        for (UserAccount userAccount : userAccountList) {
-            LpLog log = new LpLog();
-            log.setCharacterName(userAccount.getCharacterName());
-            log.setAccountId(userAccount.getId());
-            log.setUserId(userAccount.getUserId());
-
-            log.setLp(userAccount.getLpNow().multiply(new BigDecimal("0.4")));
-            log.setSource(LpSource.AUTO_DEC);
-            log.setType(LpType.EXPENDITURE);
-            log.setContent("联盟PAP转化LP");
-            decSaveLog.add(log);
-
-            boolean hasSome = userAccount.getLpNow() != null && userAccount.getLpNow().compareTo(BigDecimal.ZERO) > 0;
-            if (hasSome) {
-                //当前可用的60%
-                userAccount.setLpNow(userAccount.getLpNow().multiply(new BigDecimal("0.6")));
-            }
-            boolean hasUsesome = userAccount.getLpUse() != null && userAccount.getLpUse().compareTo(BigDecimal.ZERO) > 0;
-            //已经被用掉40%
-            if (hasUsesome) {
-                userAccount.setLpUse(userAccount.getLpUse().add(userAccount.getLpUse().multiply(new BigDecimal("0.4"))));
-            }
-            if (hasSome || hasUsesome) {
-                userAccount.updateById();
-            }
-        }
-        if (!CollectionUtils.isEmpty(decSaveLog)) {
-            baseMapper.batchInsert(decSaveLog);
-        }
-
         Map<Long, List<UserAccount>> userId2AccountList = new HashMap<>();
         for (UserAccount userAccount : userAccountList) {
             if (userAccount.getUserId() == null) {
@@ -174,6 +145,7 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
                 userAccounts.add(userAccount);
             }
         }
+        //所有角色加起来，算一个user全部的PAP
         Map<Long, BigDecimal> totalPAP = new HashMap<>();
         for (Long userId : userId2AccountList.keySet()) {
             List<UserAccount> userAccounts = userId2AccountList.get(userId);
@@ -210,7 +182,7 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
             log.setLp(totalPAP.get(userId));
             log.setSource(LpSource.PAP);
             log.setType(LpType.INCOME);
-            log.setContent("联盟PAP转化LP");
+            log.setContent("PAP转化LP");
             saveLogList.add(log);
             // 更新用户的LP
             mainAccount.setLpNow(mainAccount.getLpNow().add(totalPAP.get(userId)));
@@ -220,6 +192,47 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
         if (!CollectionUtils.isEmpty(saveLogList)) {
             baseMapper.batchInsert(saveLogList);
         }
+        userAccountMapper.cleanUserPap();
+    }
 
+    @Async("threadPoolTaskExecutor")
+    public void discountLp() {
+        List<UserAccount> userAccountList = userAccountMapper.selectList(null);
+        List<LpLog> decSaveLog = new ArrayList<>();
+        for (UserAccount userAccount : userAccountList) {
+            LpLog log = new LpLog();
+            log.setCharacterName(userAccount.getCharacterName());
+            log.setAccountId(userAccount.getId());
+            log.setUserId(userAccount.getUserId());
+
+            log.setLp(userAccount.getLpNow().multiply(new BigDecimal("0.4")));
+            log.setSource(LpSource.AUTO_DEC);
+            log.setType(LpType.EXPENDITURE);
+            log.setContent("每月自动打折上个月的LP，保留60%");
+            decSaveLog.add(log);
+            //小于0.4的就不减了，因为也兑换不了什么
+            boolean hasSome =
+                    userAccount.getLpNow() != null && userAccount.getLpNow().compareTo(new BigDecimal("0.4")) > 0;
+            BigDecimal decount = BigDecimal.ZERO;
+            if (hasSome) {
+                //当前可用的60%
+                decount = userAccount.getLpNow().multiply(new BigDecimal("0.4"));
+                userAccount.setLpNow(userAccount.getLpNow().multiply(new BigDecimal("0.6")));
+            }
+            //可能一个都没用只判断是否
+            //已经被用掉40%
+            if (userAccount.getLpUse() != null && hasSome) {
+                //自动消除40% 可用的，total总量不变
+                userAccount.setLpUse(userAccount.getLpUse().add(decount));
+            }
+            //有了才能扣
+            if (hasSome) {
+                userAccount.updateById();
+            }
+
+        }
+        if (!CollectionUtils.isEmpty(decSaveLog)) {
+            baseMapper.batchInsert(decSaveLog);
+        }
     }
 }

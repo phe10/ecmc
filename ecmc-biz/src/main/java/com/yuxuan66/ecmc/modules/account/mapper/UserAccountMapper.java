@@ -19,4 +19,6 @@ public interface UserAccountMapper extends BaseMapper<UserAccount> {
      * @return 角色列表
      */
     Page<UserAccount> listUserAccount(Page<UserAccount> page,@Param("query") UserAccountQuery accountQuery);
+
+    void cleanUserPap();
 }

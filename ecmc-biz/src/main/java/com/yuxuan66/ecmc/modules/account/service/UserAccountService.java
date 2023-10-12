@@ -21,6 +21,7 @@ import com.yuxuan66.ecmc.modules.account.service.refresh.AccountKillMailRefresh;
 import com.yuxuan66.ecmc.modules.lp.entity.LpLog;
 import com.yuxuan66.ecmc.modules.lp.entity.consts.LpType;
 import com.yuxuan66.ecmc.modules.lp.mapper.LpLogMapper;
+import com.yuxuan66.ecmc.modules.system.entity.RolesMenus;
 import com.yuxuan66.ecmc.modules.system.entity.UsersRoles;
 import com.yuxuan66.ecmc.modules.system.mapper.UsersRolesMapper;
 import com.yuxuan66.ecmc.modules.system.service.UserService;
@@ -456,5 +457,4 @@ public class UserAccountService extends BaseService<UserAccount, UserAccountMapp
             accountKillMailRefresh.refresh(userAccount, typeMap, killMailList);
         }
     }
-
 }

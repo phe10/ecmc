@@ -29,12 +29,11 @@ public class Pap2LPJob {
     @Resource
     private final LpService lpService;
     /**
-     * 每个月的28号23点进行PAP转化成LP
-     * 0 23 28 * *
+     * 每个月的第二天10分进行PAP到LP转化，完了之后清零，但联盟那边5号所以还会存在一部分
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 31 * ? * *")
+    @Scheduled(cron = "0 45 0 1 * ?")
     public void process() throws Exception {
         lpService.pap2lp();
     }
