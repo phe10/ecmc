@@ -53,13 +53,13 @@ public class LpLog extends BaseEntity<LpLog> implements Serializable {
      * 兑换商品的日志ID
      */
     private Long orderId;
-    
+
 
 
     @TableField(exist = false)
     private UserAccount userAccount;
 
 
-
+    private Long fleetId;
 }
 

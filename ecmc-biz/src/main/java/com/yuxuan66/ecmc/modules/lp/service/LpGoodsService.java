@@ -157,6 +157,7 @@ public class LpGoodsService extends BaseService<LpGoods, LpGoodsMapper> {
                 lpLog.setLp(useLp);
                 lpLog.setAccountId(account.getId());
                 lpLog.setUserId(account.getUserId());
+                lpLog.setFleetId(0L);
                 logList.add(lpLog);
             }
             if (!logList.isEmpty()) {

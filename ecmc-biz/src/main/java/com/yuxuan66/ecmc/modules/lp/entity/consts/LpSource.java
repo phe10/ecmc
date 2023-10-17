@@ -16,7 +16,7 @@ public enum LpSource {
     /**
      * PAP转换
      */
-    PAP(1, "PAP转换"),
+    PAP(1, "联盟PAP转换"),
     /**
      * 手动发放
      */
@@ -42,7 +42,9 @@ public enum LpSource {
      */
     ULTRA_NET_ORDER(7, "超网订单"),
 
-    AUTO_DEC(8, "自动折算");
+    AUTO_DEC(8, "自动折算"),
+
+    CROP_PAP_TRANS(9,"军团PAP活动发放");
     @JsonValue
     @EnumValue
     private final Integer value;

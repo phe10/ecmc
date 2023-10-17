@@ -103,6 +103,7 @@ public class LpGoodsOrderService extends BaseService<LpGoodsOrder, LpGoodsOrderM
                     newLpLog.setLp(lpLog.getLp());
                     newLpLog.setAccountId(lpLog.getAccountId());
                     newLpLog.setUserId(lpLog.getUserId());
+                    newLpLog.setFleetId(0L);
                     returnLogList.add(newLpLog);
 
                     // 给用户加回LP
@@ -117,7 +118,7 @@ public class LpGoodsOrderService extends BaseService<LpGoodsOrder, LpGoodsOrderM
 
             }
             // 发送邮件
-            MailApi.send(userAccountService.getMainAccount(),"LP商品兑换审批完成",EsiMailTemplate.getOrderApprovalNotice(order,orderDto), List.of(new MailApi.Recipient(order.getCharacterId(), Recipient.RecipientTypeEnum.CHARACTER)));
+            MailApi.send(userAccountService.getMainAccount(), "LP商品兑换审批完成", EsiMailTemplate.getOrderApprovalNotice(order, orderDto), List.of(new MailApi.Recipient(order.getCharacterId(), Recipient.RecipientTypeEnum.CHARACTER)));
         }
 
     }

@@ -1,21 +1,17 @@
 package com.yuxuan66.ecmc.modules.lp.rest;
 
-import cn.hutool.core.convert.Convert;
-import com.yuxuan66.ecmc.modules.account.entity.UserAccount;
 import com.yuxuan66.ecmc.modules.account.mapper.UserAccountMapper;
 import com.yuxuan66.ecmc.modules.account.service.OpenAccountApiService;
+import com.yuxuan66.ecmc.modules.data.service.MemberService;
 import com.yuxuan66.ecmc.modules.lp.entity.dto.SendLpDto;
 import com.yuxuan66.ecmc.modules.lp.entity.query.LpLogQuery;
 import com.yuxuan66.ecmc.modules.lp.service.LpService;
-import com.yuxuan66.ecmc.modules.lp.service.PapService;
 import com.yuxuan66.ecmc.support.base.BaseController;
 import com.yuxuan66.ecmc.support.base.resp.Ps;
 import com.yuxuan66.ecmc.support.base.resp.Rs;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Sir丶雨轩
@@ -29,9 +25,6 @@ public class LpController extends BaseController<LpService> {
     private OpenAccountApiService accountApiService;
     @Resource
     private UserAccountMapper userAccountMapper;
-
-    @Resource
-    private PapService papService;
 
     /**
      * 给指定用户发放LP
@@ -66,8 +59,10 @@ public class LpController extends BaseController<LpService> {
         return Ps.ok(baseService.listLpLog(lpLogQuery));
     }
 
+    @Resource
+    private MemberService memberService;
     @GetMapping(path = "/paa")
-    public void paa() {
-        papService.alliancePapSync();
+    public void paa() throws Exception {
+        memberService.syncCropMember();
     }
 }
