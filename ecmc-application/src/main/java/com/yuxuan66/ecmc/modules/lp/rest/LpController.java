@@ -61,8 +61,10 @@ public class LpController extends BaseController<LpService> {
 
     @Resource
     private MemberService memberService;
+    @Resource
+    private LpService lpService;
     @GetMapping(path = "/paa")
     public void paa() throws Exception {
-        memberService.syncCropMember();
+        lpService.pap2lp();
     }
 }

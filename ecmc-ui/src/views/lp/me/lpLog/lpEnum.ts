@@ -26,7 +26,11 @@ export enum LpSource {
   /**
    * 超网订单
    */
-  ULTRA_NET_ORDER = 7
+  ULTRA_NET_ORDER = 7,
+
+  AUTO_DEC = 8,
+
+  CROP_PAP_TRANS
 }
 
 export enum LpType {
@@ -37,8 +41,8 @@ export enum LpType {
 }
 
 // 获取LP的来源
-export function getSource(source){
-  switch (source){
+export function getSource(source) {
+  switch (source) {
     case LpSource.PAP:
       return 'PAP转换'
     case LpSource.ULTRA_NET_ORDER:

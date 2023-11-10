@@ -110,7 +110,6 @@ public class MemberService extends BaseService<Member, MemberMapper> {
             }
             // 判断是否在SEAT中存在
             member.setSeatSystem(!notSeatMember.contains(member.getCharacterId()));
-//            member.setSeatSystem(true);
             memberList.add(member);
 
         }

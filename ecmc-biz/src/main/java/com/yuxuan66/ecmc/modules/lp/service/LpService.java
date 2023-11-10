@@ -3,6 +3,7 @@ package com.yuxuan66.ecmc.modules.lp.service;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuxuan66.ecmc.cache.ConfigKit;
 import com.yuxuan66.ecmc.cache.EveCache;
@@ -187,7 +188,8 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
         if (CollectionUtils.isEmpty(totalPAP)) {
             return;
         }
-//        List<LpLog> saveLogList = new ArrayList<>();
+        List<LpLog> saveLogList = new ArrayList<>();
+        List<Long> transforedUser = new ArrayList<>();
         //进行当月的PAP转化成LP，加到主账号上
         for (Long userId : totalPAP.keySet()) {
             if (totalPAP.get(userId) == null) {
@@ -203,32 +205,45 @@ public class LpService extends BaseService<LpLog, LpLogMapper> {
             UserAccount mainAccount =
                     userAccountService.query().eq("user_id", userId).eq("is_main", 1).one();
             //以下代码不再需要，后续pap单单指的是联盟pap
-//            LpLog log = new LpLog();
-//            log.setCharacterName(mainAccount.getCharacterName());
-//            log.setAccountId(mainAccount.getId());
-//            log.setUserId(mainAccount.getUserId());
-//
-//            log.setLp(totalPAP.get(userId));
-//            log.setSource(LpSource.PAP);
-//            log.setType(LpType.INCOME);
-//            log.setContent("PAP转化LP");
-//            saveLogList.add(log);
+            LpLog log = new LpLog();
+            log.setCharacterName(mainAccount.getCharacterName());
+            log.setAccountId(mainAccount.getId());
+            log.setUserId(mainAccount.getUserId());
+
+            log.setLp(totalPAP.get(userId));
+            log.setSource(LpSource.PAP);
+            log.setType(LpType.INCOME);
+            log.setContent("联盟PAP转化LP");
+            log.setFleetId(0L);
+            saveLogList.add(log);
+
             BigDecimal addLp = BigDecimal.ZERO;
             // 如果pap>3 小于等于50 则1:1 ;>50 2:1
             if (usersPap.compareTo(new BigDecimal("3")) > 0 && usersPap.compareTo(new BigDecimal("50")) <= 0) {
                 addLp = usersPap;
             } else {
-                addLp = usersPap.multiply(new BigDecimal("0.5"));
+                BigDecimal d50 = new BigDecimal("50");
+                //多出50的部分打0.5折
+                BigDecimal extPap = usersPap.subtract(d50).multiply(new BigDecimal("0.5"));
+                addLp = extPap.add(d50);
             }
             mainAccount.setLpNow(mainAccount.getLpNow().add(addLp));
             mainAccount.setLpTotal(mainAccount.getLpTotal().add(addLp));
             //记录修改状态代表已被转化过
             mainAccount.setPapStatus(PAP_TRANSFERED);
             mainAccount.updateById();
+
+            transforedUser.add(userId);
         }
-//        if (!CollectionUtils.isEmpty(saveLogList)) {
-//            baseMapper.batchInsert(saveLogList);
-//        }
+        //保存转移记录
+        if (!CollectionUtils.isEmpty(saveLogList)) {
+            baseMapper.batchInsert(saveLogList);
+        }
+        //pap转移过过不重新转移了
+        for (Long userId : transforedUser) {
+            userAccountService.update(new UpdateWrapper<UserAccount>().eq("user_id", userId).set("pap_status", PAP_TRANSFERED));
+        }
+
 //        userAccountMapper.cleanUserPap();
 //        papService.makeupCleanLog(userAccountList);
     }

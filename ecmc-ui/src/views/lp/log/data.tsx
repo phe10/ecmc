@@ -76,6 +76,8 @@ export const searchFormSchema: FormSchema[] = [
         { label: '超网购买', value: LpSource.ULTRA_NET_ORDER },
         { label: '手动发放', value: LpSource.MANUAL_RELEASE },
         { label: '兑换商品', value: LpSource.EXCHANGE_GOOD },
+        { label: '自动折算', value: LpSource.AUTO_DEC },
+        { label: '军团PAP活动发放', value: LpSource.CROP_PAP_TRANS },
       ]
     }
   },

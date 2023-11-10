@@ -32,4 +32,10 @@ public class PapController extends BaseController<LpService> {
     public Rs searchFleetMemebers(FleetMemebersQuery fleetMemebersQuery){
         return Rs.ok(baseService.fleetMemebers(fleetMemebersQuery));
     }
+
+    @GetMapping(path = "/actionList")
+    public Rs actionList(FleetMemebersQuery fleetMemebersQuery){
+        //TODO
+        return Rs.ok();
+    }
 }
